@@ -187,6 +187,8 @@ namespace Org.BouncyCastle.Security
             AddKpgAlgorithm("ECGOST3410",
                 "ECGOST-3410",
                 "GOST-3410-2001");
+            AddKpgAlgorithm("ECGOST3411-2012-256");
+            AddKpgAlgorithm("ECGOST3411-2012-512");
             AddKpgAlgorithm("Ed25519",
                 "Ed25519ctx",
                 "Ed25519ph",
@@ -214,12 +216,12 @@ namespace Org.BouncyCastle.Security
             AddDefaultKeySizeEntries(192, "AES", "AES192", "CAMELLIA192", "DESEDE3", "HMACTIGER",
                 "RIJNDAEL", "SERPENT", "TNEPRES");
             AddDefaultKeySizeEntries(224, "HMACSHA3-224", "HMACKECCAK224", "HMACSHA224", "HMACSHA512/224");
-            AddDefaultKeySizeEntries(256, "AES256", "CAMELLIA", "CAMELLIA256", "CAST6", "CHACHA7539", "GOST28147",
+            AddDefaultKeySizeEntries(256, "GOST3411-2012-256", "AES256", "CAMELLIA", "CAMELLIA256", "CAST6", "CHACHA7539", "GOST28147",
                 "HC256", "HMACGOST3411-2012-256", "HMACSHA3-256", "HMACKECCAK256", "HMACSHA256", "HMACSHA512/256",
                 "RC5-64", "RC6", "THREEFISH-256", "TWOFISH");
             AddDefaultKeySizeEntries(288, "HMACKECCAK288");
             AddDefaultKeySizeEntries(384, "HMACSHA3-384", "HMACKECCAK384", "HMACSHA384");
-            AddDefaultKeySizeEntries(512, "HMACGOST3411-2012-512", "HMACSHA3-512", "HMACKECCAK512", "HMACSHA512", "THREEFISH-512");
+            AddDefaultKeySizeEntries(512, "GOST3411-2012-512", "HMACGOST3411-2012-512", "HMACSHA3-512", "HMACKECCAK512", "HMACSHA512", "THREEFISH-512");
             AddDefaultKeySizeEntries(1024, "THREEFISH-1024");
         }
 

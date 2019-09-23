@@ -14,7 +14,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
     public abstract class ECKeyParameters
         : AsymmetricKeyParameter
     {
-        private static readonly string[] algorithms = { "EC", "ECDSA", "ECDH", "ECDHC", "ECGOST3410", "ECMQV" };
+        private static readonly string[] algorithms = { "EC", "ECDSA", "ECDH", "ECDHC", "ECGOST3410", "ECGOST3411-2012-256", "ECGOST3411-2012-512", "ECMQV" };
 
         private readonly string algorithm;
         private readonly ECDomainParameters parameters;

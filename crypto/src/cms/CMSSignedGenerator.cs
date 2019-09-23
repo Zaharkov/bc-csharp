@@ -113,8 +113,8 @@ namespace Org.BouncyCastle.Cms
             algorithms["GOST3411WITHECGOST3410"] = CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x2001;
             algorithms["GOST3411WITHECGOST3410-2001"] = CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x2001;
             algorithms["GOST3411WITHGOST3410-2001"] = CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x2001;
-            algorithms["GOST3411WITHECGOST3410-2012-256"] = RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256;
-            algorithms["GOST3411WITHECGOST3410-2012-512"] = RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_512;
+            algorithms["GOST3411_2012_256WITHECGOST3410"] = RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256;
+            algorithms["GOST3411_2012_512WITHECGOST3410"] = RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_512;
             algorithms["GOST3411WITHGOST3410-2012-256"] = RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256;
             algorithms["GOST3411WITHGOST3410-2012-512"] = RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_512;
             algorithms["GOST3411-2012-256WITHECGOST3410-2012-256"] = RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256;
@@ -397,6 +397,9 @@ namespace Org.BouncyCastle.Cms
             digestOids.Add(CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x94, CryptoProObjectIdentifiers.GostR3411);
             digestOids.Add(CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x2001, CryptoProObjectIdentifiers.GostR3411);
 
+            digestOids.Add(RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256, RosstandartObjectIdentifiers.id_tc26_gost_3411_12_256);
+            digestOids.Add(RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_512, RosstandartObjectIdentifiers.id_tc26_gost_3411_12_512);
+
             digestNameToOids.Add("SHA-1", OiwObjectIdentifiers.IdSha1);
             digestNameToOids.Add("SHA-224", NistObjectIdentifiers.IdSha224);
             digestNameToOids.Add("SHA-256", NistObjectIdentifiers.IdSha256);
@@ -418,6 +421,8 @@ namespace Org.BouncyCastle.Cms
             digestNameToOids.Add("SHAKE-256", NistObjectIdentifiers.IdShake256);
 
             digestNameToOids.Add("GOST3411", CryptoProObjectIdentifiers.GostR3411);
+            digestNameToOids.Add("GOST3411-2012-256", RosstandartObjectIdentifiers.id_tc26_gost_3411_12_256);
+            digestNameToOids.Add("GOST3411-2012-512", RosstandartObjectIdentifiers.id_tc26_gost_3411_12_512);
 
             digestNameToOids.Add("MD2", PkcsObjectIdentifiers.MD2);
             digestNameToOids.Add("MD4", PkcsObjectIdentifiers.MD4);

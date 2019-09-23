@@ -157,7 +157,7 @@ namespace Org.BouncyCastle.Security
                 ECDomainParameters dParams = new ECDomainParameters(x9.Curve, x9.G, x9.N, x9.H, x9.GetSeed());
                 return new ECPublicKeyParameters(q, dParams);
             }
-            else if (algOid.Equals(CryptoProObjectIdentifiers.GostR3410x2001))
+            else if (algOid.Equals(CryptoProObjectIdentifiers.GostR3410x2001) || algOid.Equals(RosstandartObjectIdentifiers.id_tc26_gost_3410_12_256) || algOid.Equals(RosstandartObjectIdentifiers.id_tc26_gost_3410_12_512))
             {
                 Gost3410PublicKeyAlgParameters gostParams = Gost3410PublicKeyAlgParameters.GetInstance(algID.Parameters);
                 DerObjectIdentifier publicKeyParamSet = gostParams.PublicKeyParamSet;

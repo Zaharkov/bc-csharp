@@ -7,6 +7,7 @@ using Org.BouncyCastle.Asn1.CryptoPro;
 using Org.BouncyCastle.Asn1.Nist;
 using Org.BouncyCastle.Asn1.Oiw;
 using Org.BouncyCastle.Asn1.Pkcs;
+using Org.BouncyCastle.Asn1.Rosstandart;
 using Org.BouncyCastle.Asn1.TeleTrust;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Asn1.X9;
@@ -77,6 +78,9 @@ namespace Org.BouncyCastle.Crypto.Operators
 			// The parameters field SHALL be NULL for RSA based signature algorithms.
 			//
 			noParams.Add(X9ObjectIdentifiers.ECDsaWithSha1);
+            algorithms.Add("GOST3411_2012_256WITHECGOST3410", RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256);
+            algorithms.Add("GOST3411_2012_512WITHECGOST3410", RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_512);
+
 			noParams.Add(X9ObjectIdentifiers.ECDsaWithSha224);
 			noParams.Add(X9ObjectIdentifiers.ECDsaWithSha256);
 			noParams.Add(X9ObjectIdentifiers.ECDsaWithSha384);
@@ -97,6 +101,9 @@ namespace Org.BouncyCastle.Crypto.Operators
 			// explicit params
 			//
 			AlgorithmIdentifier sha1AlgId = new AlgorithmIdentifier(OiwObjectIdentifiers.IdSha1, DerNull.Instance);
+            noParams.Add(RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256);
+            noParams.Add(RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_512);
+
 			exParams.Add("SHA1WITHRSAANDMGF1", CreatePssParams(sha1AlgId, 20));
 
 			AlgorithmIdentifier sha224AlgId = new AlgorithmIdentifier(NistObjectIdentifiers.IdSha224, DerNull.Instance);
