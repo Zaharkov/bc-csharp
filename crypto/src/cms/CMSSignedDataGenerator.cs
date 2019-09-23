@@ -543,7 +543,7 @@ namespace Org.BouncyCastle.Cms
 	                    throw new CmsException("encapsulation error.", e);
 	                }
 				}
-				octs = new BerOctetString(bOut.ToArray());
+				octs = new DerOctetString(bOut.ToArray());
             }
 
             ContentInfo encInfo = new ContentInfo(contentTypeOid, octs);
