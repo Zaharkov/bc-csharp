@@ -21,6 +21,7 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
+using Org.BouncyCastle.X509.Store;
 using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 using X509Extension = Org.BouncyCastle.Asn1.X509.X509Extension;
 
@@ -111,13 +112,11 @@ namespace GenerationGost2012
 
             var bicryptIdentifier = new DerObjectIdentifier("1.2.643.3.123.3.1");
             var parentAs = new DerObjectIdentifier("1.2.643.3.123.3.4");
-            var certificateNumberIdentifier = new DerObjectIdentifier("1.2.643.3.123.3.5");
 
             extensions.Add(new CertificateExtension(X509Extensions.KeyUsage, true, new DerBitString(0xF8)));
-            extensions.Add(new CertificateExtension(bicryptIdentifier, false, new DerUtf8String("AXXXXXXXsФамXXX")));
-            extensions.Add(new CertificateExtension(certificateNumberIdentifier, false, new DerUtf8String(CertificateNumber.ToString())));
-            extensions.Add(new CertificateExtension(X509Extensions.BasicConstraints, false, new BasicConstraints(false)));
-            extensions.Add(new CertificateExtension(parentAs, false, new DerOctetString(Encoding.UTF8.GetBytes("1.2.643.3.123.5.4"))));
+            extensions.Add(new CertificateExtension(bicryptIdentifier, false, new DerUtf8String($"A003EC0{CertificateNumber}sФам24002")));
+            extensions.Add(new CertificateExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(false)));
+            extensions.Add(new CertificateExtension(parentAs, false, new DerObjectIdentifier("1.2.643.3.123.5.4")));
             extensions.Add(new CertificateExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifierStructure(publicKey)));
 
             return extensions;
@@ -175,7 +174,21 @@ namespace GenerationGost2012
             var extensions = new AttributePkcs(PkcsObjectIdentifiers.Pkcs9AtExtensionRequest, new DerSet(new X509Extensions(oids, values)));
             var request = new Pkcs10CertificationRequest(SignatureAlgorithm, subject, keyPair.Public, new DerSet(extensions), keyPair.Private);
 
-            SaveCmsData(bcCertificate, request, keyPair.Private);
+            /* Есть 2 стула... */
+
+            /* Первый - можно просто оформить чистый запрос на сертификат PKCS#10
+             * В нем не будет никаких других подписей, он максимально простой
+             * и по сути в нем есть все необходимое чтобы потом подписывать документы, если банк его "примет"
+             */
+            SavePkcs10Data(request);
+
+            /* Второй - если в обязательном порядке нужен "заверенный" сертификат PKCS#7
+             * Для этого его нужно подписать другим сертификатом выданным от "сертифицированного СКЗИ"
+             * Соответственно нужен сам сертификат (преобразованный в Bouncy Castle) + приватный ключ для подписи
+             * С первым понятно откуда брать, а вот как вы "вытащите" приватный ключ... я не смог =)
+             * Но код на всякий случай оставил тут
+             * SavePkcs7Data(certificateForSign, request, PrivateKeyForSign);
+             */
         }
 
         #endregion
@@ -189,7 +202,39 @@ namespace GenerationGost2012
             File.WriteAllBytes(@"certificate.pfx", certificateData); //save certificate
         }
 
-        private static void SaveCmsData(X509Certificate bcCertificate, Pkcs10CertificationRequest request, AsymmetricKeyParameter privateKey)
+        private static void SavePkcs10Data(Pkcs10CertificationRequest request)
+        {
+            var requestBytes = request.GetEncoded();
+            var cmsBase64 = Convert.ToBase64String(requestBytes);
+
+            /*
+             * you can check cert data here - https://lapo.it/asn1js
+             * just copy+paste cmsBase64 string
+             */
+
+            var cmsData = new StringBuilder();
+            cmsData.Append("-----BEGIN CERTIFICATE REQUEST-----");
+            cmsData.Append("\\n");
+
+            var certLength = cmsBase64.Length;
+            for (var i = 0; i < certLength; i += 64)
+            {
+                var substr = certLength - i >= 64
+                    ? cmsBase64.Substring(i, 64)
+                    : cmsBase64.Substring(i);
+
+                cmsData.Append(substr);
+                cmsData.Append("\\n");
+            }
+
+            cmsData.Append("-----END CERTIFICATE REQUEST-----");
+            cmsData.Append("\\n");
+            var cmsString = cmsData.ToString();  //add to http request in bank for approving you certificate
+
+            File.WriteAllText(@"certificate.cms", cmsString);
+        }
+
+        private static void SavePkcs7Data(X509Certificate bcCertificate, Pkcs10CertificationRequest request, AsymmetricKeyParameter privateKey)
         {
             var requestBytes = request.GetEncoded();
 
@@ -200,6 +245,7 @@ namespace GenerationGost2012
             var factory = new Asn1SignatureFactory(SingingAlgorithm, privateKey);
 
             gen.AddSignerInfoGenerator(signerInfoGeneratorBuilder.Build(factory, bcCertificate));
+            gen.AddCertificates(MakeCertStore(bcCertificate));
 
             var signed = gen.Generate(typedData, true);
             var signedBytes = signed.GetEncoded();
@@ -232,6 +278,17 @@ namespace GenerationGost2012
             File.WriteAllText(@"certificate.cms", cmsString);
         }
 
+        private static IX509Store MakeCertStore(params X509Certificate[] certs)
+        {
+            IList certList = new ArrayList();
+            foreach (X509Certificate cert in certs)
+            {
+                certList.Add(cert);
+            }
+
+            return X509StoreFactory.Create("Certificate/Collection", new X509CollectionStoreParameters(certList));
+        }
+
         private static void SavePrivateKey(ECPrivateKeyParameters privateKey)
         {
             var bytes = privateKey.D.ToByteArray();
@@ -255,7 +312,7 @@ namespace GenerationGost2012
             return securePassword;
         }
 
-        private static byte[] Sign(string data)
+        private static string Sign(string data)
         {
             var certBytes = File.ReadAllBytes("certificate.pfx");
             var cert = new X509Certificate2(certBytes, ConvertToSecureString(Password));
@@ -270,7 +327,7 @@ namespace GenerationGost2012
             if (!VerifySignature(bcCert.GetPublicKey(), signature, data))
                 throw new Exception("sign error");
 
-            return signature;
+            return Convert.ToBase64String(signature);
         }
 
         public static byte[] SignData(string msg, ICipherParameters privKey)
