@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Security;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Org.BouncyCastle.Asn1;
@@ -29,7 +29,7 @@ namespace GenerationGost2012
 {
     class Program
     {
-        private const string SingingAlgorithm = "GOST3411WITHECGOST3410";
+        private const string SingingAlgorithm = "GOST3411_2012_256WITHECGOST3410";
         private const string SignatureAlgorithm = "GOST3411_2012_256WITHECGOST3410";
         private const string KeyAlgorithm = "ECGOST3411-2012-256";
         // in my case need [B] parameter GostR3410x2001CryptoPro[B]
@@ -40,8 +40,17 @@ namespace GenerationGost2012
         public static void Main()
         {
             GenerateBouncyCastleCertificate();
-            var data = "Mary have nuclear bomb";
-            var signature = Sign(data); // 64 byte
+            
+            var data = new Dictionary<string, string>
+            {
+                {"param1", "Mery" },
+                {"param2", "have"},
+                {"param3", "nuclear bomb" }
+            };
+
+            var digest = string.Join("\n", data.Select(t => $"{t.Key}={t.Value}"));
+            // for GOST 2012 need full CMS
+            var signCms = Cms(digest); //
             /* add signature to request */
         }
 
@@ -230,6 +239,7 @@ namespace GenerationGost2012
             cmsData.Append("-----END CERTIFICATE REQUEST-----");
             cmsData.Append("\\n");
             var cmsString = cmsData.ToString();  //add to http request in bank for approving you certificate
+            //after you will need copy bank certificate what approved you certificate from API
 
             File.WriteAllText(@"certificate.cms", cmsString);
         }
@@ -274,6 +284,7 @@ namespace GenerationGost2012
             cmsData.Append("-----END CMS-----");
             cmsData.Append("\\n");
             var cmsString = cmsData.ToString();  //add to http request in bank for approving you certificate
+            //after you will need copy bank certificate what approved you certificate from API
 
             File.WriteAllText(@"certificate.cms", cmsString);
         }
@@ -298,57 +309,48 @@ namespace GenerationGost2012
         #endregion
 
         #region Sing
-        private static SecureString ConvertToSecureString(string password)
+
+        private static string Cms(string data)
         {
-            if (password == null)
-                throw new ArgumentNullException(nameof(password));
+            var requestBytes = Encoding.UTF8.GetBytes(data);
+            var typedData = new CmsProcessableByteArray(requestBytes);
+            var gen = new CmsSignedDataGenerator();
+            var signerInfoGeneratorBuilder = new SignerInfoGeneratorBuilder();
 
-            var securePassword = new SecureString();
+            var factory = new Asn1SignatureFactory(SingingAlgorithm, GetKey());
 
-            foreach (var c in password)
-                securePassword.AppendChar(c);
+            var bcCertificate = GetBankCertificate();
+            gen.AddSignerInfoGenerator(signerInfoGeneratorBuilder.Build(factory, bcCertificate));
+            gen.AddCertificates(MakeCertStore(bcCertificate));
 
-            securePassword.MakeReadOnly();
-            return securePassword;
+            var signed = gen.Generate(typedData, false);
+            var signedBytes = signed.GetEncoded();
+
+            return  Convert.ToBase64String(signedBytes);
         }
 
-        private static string Sign(string data)
+        private static ECPrivateKeyParameters GetKey()
         {
-            var certBytes = File.ReadAllBytes("certificate.pfx");
-            var cert = new X509Certificate2(certBytes, ConvertToSecureString(Password));
             var bytes = File.ReadAllBytes(@"private.key");
-
             var key = new BigInteger(bytes);
-            var keyParameters = new ECPrivateKeyParameters(KeyAlgorithm, key, PublicKeyParamSet);
+            return new ECPrivateKeyParameters(KeyAlgorithm, key, PublicKeyParamSet);
+        }
 
-            var signature = SignData(data, keyParameters);
+        private static X509Certificate GetBankCertificate()
+        {
+            //base64 encoded bank (!) certificate
+            //you can get it, when bank will "approve" your CMS request from API
+            //so just copy paste bank certificate from API
+            /*
+             * "uuid": "....",
+             * "active": true,
+             * "cert": "-----BEGIN CERTIFICATE-----\r\nMIIEk....
+             * remove all \r\n and comments and paste in bankCertificate.txt
+             */
+            var sbercert = File.ReadAllText("bankCertificate.txt"); 
+            var sberBytes = Convert.FromBase64String(sbercert);
             var parser = new X509CertificateParser();
-            var bcCert = parser.ReadCertificate(cert.GetRawCertData());
-            if (!VerifySignature(bcCert.GetPublicKey(), signature, data))
-                throw new Exception("sign error");
-
-            return Convert.ToBase64String(signature);
-        }
-
-        public static byte[] SignData(string msg, ICipherParameters privKey)
-        {
-            var msgBytes = Encoding.UTF8.GetBytes(msg);
-
-            var signer = SignerUtilities.GetSigner(SignatureAlgorithm);
-            signer.Init(true, privKey);
-            signer.BlockUpdate(msgBytes, 0, msgBytes.Length);
-            var sigBytes = signer.GenerateSignature();
-
-            return sigBytes;
-        }
-
-        private static bool VerifySignature(ICipherParameters pubKey, byte[] sigBytes, string msg)
-        {
-            var msgBytes = Encoding.UTF8.GetBytes(msg);
-            var signer = SignerUtilities.GetSigner(SignatureAlgorithm);
-            signer.Init(false, pubKey);
-            signer.BlockUpdate(msgBytes, 0, msgBytes.Length);
-            return signer.VerifySignature(sigBytes);
+            return parser.ReadCertificate(sberBytes);
         }
 
         #endregion
