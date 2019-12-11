@@ -301,5 +301,9 @@ namespace Org.BouncyCastle.Asn1.Pkcs
         public static readonly DerObjectIdentifier PbeWithShaAnd2KeyTripleDesCbc	= new DerObjectIdentifier(Pkcs12PbeIds + ".4");
         public static readonly DerObjectIdentifier PbeWithShaAnd128BitRC2Cbc		= new DerObjectIdentifier(Pkcs12PbeIds + ".5");
         public static readonly DerObjectIdentifier PbewithShaAnd40BitRC2Cbc			= new DerObjectIdentifier(Pkcs12PbeIds + ".6");
+
+        public const string PkcsDeviceType = "1.3.6.1.4.1.13242.5.2.3";
+        public static readonly DerObjectIdentifier PkcsSigningDeviceType = new DerObjectIdentifier(PkcsDeviceType);
+        public static readonly DerObjectIdentifier PkcsSigningDeviceTypeSimple = new DerObjectIdentifier(PkcsDeviceType + ".1");
     }
 }
