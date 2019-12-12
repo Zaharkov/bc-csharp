@@ -24,6 +24,8 @@ using Org.BouncyCastle.X509.Extension;
 using Org.BouncyCastle.X509.Store;
 using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 using X509Extension = Org.BouncyCastle.Asn1.X509.X509Extension;
+using AttributeTable = Org.BouncyCastle.Asn1.Cms.AttributeTable;
+using Attribute = Org.BouncyCastle.Asn1.Cms.Attribute;
 
 namespace GenerationGost2012
 {
@@ -317,6 +319,10 @@ namespace GenerationGost2012
             var gen = new CmsSignedDataGenerator();
             var signerInfoGeneratorBuilder = new SignerInfoGeneratorBuilder();
 
+            var attrs = GetSigningParameters();
+            var parameters = new DefaultSignedAttributeTableGenerator(attrs);
+            signerInfoGeneratorBuilder.WithSignedAttributeGenerator(parameters);
+
             var factory = new Asn1SignatureFactory(SingingAlgorithm, GetKey());
 
             var bcCertificate = GetBankCertificate();
@@ -327,6 +333,24 @@ namespace GenerationGost2012
             var signedBytes = signed.GetEncoded();
 
             return  Convert.ToBase64String(signedBytes);
+        }
+
+        private static AttributeTable GetSigningParameters()
+        {
+            var attrs = new List<Attribute>
+            {
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningDeviceType, new DerSet(PkcsObjectIdentifiers.PkcsSigningDeviceTypeSimple)),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningUnknown1, new DerSet(PkcsObjectIdentifiers.PkcsSigningUnknown1Value1)),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningUnknown2, new DerSet(PkcsObjectIdentifiers.PkcsSigningUnknown2Value1)),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningDeviceNumber, new DerSet(new DerUtf8String("TLSXXXXXXXXB"))),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningDevicePin, new DerSet(new DerInteger(1)))
+            };
+            IDictionary table = new Hashtable();
+
+            foreach (var attribute in attrs)
+                table.Add(attribute.AttrType, attribute);
+
+            return new AttributeTable(table);
         }
 
         private static ECPrivateKeyParameters GetKey()

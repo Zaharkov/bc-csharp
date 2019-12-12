@@ -3,9 +3,6 @@ using System.Collections;
 
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cms;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.Rosstandart;
-using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Utilities;
 using AttributeTable = Org.BouncyCastle.Asn1.Cms.AttributeTable;
 using Time = Org.BouncyCastle.Asn1.Cms.Time;
@@ -99,20 +96,6 @@ namespace Org.BouncyCastle.Cms
                 }
             }
 
-            if (parameters.Contains(CmsAttributeTableParameter.DigestAlgorithmIdentifier))
-            {
-                var digestAlgorithm = (AlgorithmIdentifier) 
-                    parameters[CmsAttributeTableParameter.DigestAlgorithmIdentifier];
-
-                if ((digestAlgorithm.Algorithm.Id == RosstandartObjectIdentifiers.id_tc26_gost_3411_12_256.Id || 
-                     digestAlgorithm.Algorithm.Id == RosstandartObjectIdentifiers.id_tc26_gost_3411_12_512.Id) &&
-                    !std.Contains(CmsAttributes.SignDeviceType))
-                {
-                    Asn1.Cms.Attribute attr = new Asn1.Cms.Attribute(CmsAttributes.SignDeviceType,
-                        new DerSet(PkcsObjectIdentifiers.PkcsSigningDeviceTypeSimple));
-                    std[attr.AttrType] = attr;
-                }
-            }
 
             if (!std.Contains(CmsAttributes.SigningTime))
             {

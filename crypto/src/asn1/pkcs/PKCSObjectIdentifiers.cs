@@ -305,5 +305,19 @@ namespace Org.BouncyCastle.Asn1.Pkcs
         public const string PkcsDeviceType = "1.3.6.1.4.1.13242.5.2.3";
         public static readonly DerObjectIdentifier PkcsSigningDeviceType = new DerObjectIdentifier(PkcsDeviceType);
         public static readonly DerObjectIdentifier PkcsSigningDeviceTypeSimple = new DerObjectIdentifier(PkcsDeviceType + ".1");
+
+        public const string PkcsUnknown1 = "1.3.6.1.4.1.13242.5.2.1";
+        public static readonly DerObjectIdentifier PkcsSigningUnknown1 = new DerObjectIdentifier(PkcsUnknown1);
+        public static readonly DerObjectIdentifier PkcsSigningUnknown1Value1 = new DerObjectIdentifier(PkcsUnknown1 + ".1");
+
+        public const string PkcsUnknown2 = "1.3.6.1.4.1.13242.5.2.2";
+        public static readonly DerObjectIdentifier PkcsSigningUnknown2 = new DerObjectIdentifier(PkcsUnknown2);
+        public static readonly DerObjectIdentifier PkcsSigningUnknown2Value1 = new DerObjectIdentifier(PkcsUnknown2 + ".1");
+
+        public const string PkcsDeviceNumber = "1.3.6.1.4.1.13242.5.2.4";
+        public static readonly DerObjectIdentifier PkcsSigningDeviceNumber = new DerObjectIdentifier(PkcsDeviceNumber);
+
+        public const string PkcsDevicePin = "1.3.6.1.4.1.13242.5.2.5";
+        public static readonly DerObjectIdentifier PkcsSigningDevicePin = new DerObjectIdentifier(PkcsDevicePin);
     }
 }
