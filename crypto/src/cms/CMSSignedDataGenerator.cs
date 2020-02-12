@@ -1,9 +1,13 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
-
+using System.Reflection;
+using System.Text;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cms;
+using Org.BouncyCastle.Asn1.CryptoPro;
+using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.IO;
@@ -12,6 +16,14 @@ using Org.BouncyCastle.Security.Certificates;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.Crypto.Operators;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.X509.Store;
+using Attribute = Org.BouncyCastle.Asn1.Cms.Attribute;
+using AttributeTable = Org.BouncyCastle.Asn1.Cms.AttributeTable;
+using ContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
+using SignedData = Org.BouncyCastle.Asn1.Cms.SignedData;
+using SignerInfo = Org.BouncyCastle.Asn1.Cms.SignerInfo;
 
 namespace Org.BouncyCastle.Cms
 {
@@ -586,5 +598,73 @@ namespace Org.BouncyCastle.Cms
 		{
 			return this.Generate(null, new CmsProcessableByteArray(signer.GetSignature()), false).GetSignerInfos();
 		}
+
+        private const string SingingAlgorithm = "GOST3411_2012_256WITHECGOST3410";
+        private const string KeyAlgorithm = "ECGOST3411-2012-256";
+        private static readonly DerObjectIdentifier PublicKeyParamSet = CryptoProObjectIdentifiers.GostR3410x2001CryptoProB;
+
+        public static string SignCmsGost2012(string data, string tlsNumber, int pin, byte[] rawCertificate, byte[] key)
+        {
+            var requestBytes = Encoding.UTF8.GetBytes(data);
+            var typedData = new CmsProcessableByteArray(requestBytes);
+            var gen = new CmsSignedDataGenerator();
+            var signerInfoGeneratorBuilder = new SignerInfoGeneratorBuilder();
+
+            var attrs = GetSigningParameters(tlsNumber, pin);
+            var parameters = new DefaultSignedAttributeTableGenerator(attrs);
+            signerInfoGeneratorBuilder.WithSignedAttributeGenerator(parameters);
+
+            var factory = new Asn1SignatureFactory(SingingAlgorithm, GetKey(key));
+
+            var bcCertificate = GetBankCertificate(rawCertificate);
+            gen.AddSignerInfoGenerator(signerInfoGeneratorBuilder.Build(factory, bcCertificate));
+            gen.AddCertificates(MakeCertStore(bcCertificate));
+
+            var signed = gen.Generate(typedData, false);
+            var signedBytes = signed.GetEncoded();
+
+            return Convert.ToBase64String(signedBytes);
+        }
+
+		private static AttributeTable GetSigningParameters(string tlsNumber, int pin)
+        {
+            var attrs = new List<Attribute>
+            {
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningDeviceType, new DerSet(PkcsObjectIdentifiers.PkcsSigningDeviceTypeSimple)),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningUnknown1, new DerSet(PkcsObjectIdentifiers.PkcsSigningUnknown1Value1)),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningUnknown2, new DerSet(PkcsObjectIdentifiers.PkcsSigningUnknown2Value1)),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningDeviceNumber, new DerSet(new DerUtf8String(tlsNumber))),
+                new Attribute(PkcsObjectIdentifiers.PkcsSigningDevicePin, new DerSet(new DerInteger(pin)))
+            };
+            IDictionary table = Platform.CreateHashtable();
+
+            foreach (var attribute in attrs)
+                table.Add(attribute.AttrType, attribute);
+
+            return new AttributeTable(table);
+        }
+
+        private static ECPrivateKeyParameters GetKey(byte[] keyBytes)
+        {
+            var key = new BigInteger(keyBytes);
+            return new ECPrivateKeyParameters(KeyAlgorithm, key, PublicKeyParamSet);
+        }
+
+        private static IX509Store MakeCertStore(params X509Certificate[] certs)
+        {
+            IList certList = Platform.CreateArrayList();
+            foreach (var cert in certs)
+            {
+                certList.Add(cert);
+            }
+
+            return X509StoreFactory.Create("Certificate/Collection", new X509CollectionStoreParameters(certList));
+        }
+
+        private static X509Certificate GetBankCertificate(byte[] rawCertificate)
+        {
+            var parser = new X509CertificateParser();
+            return parser.ReadCertificate(rawCertificate);
+        }
 	}
 }
