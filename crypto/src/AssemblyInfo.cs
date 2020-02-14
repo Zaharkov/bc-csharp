@@ -13,14 +13,14 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly: AssemblyTitle("BouncyCastle.Crypto")]
-[assembly: AssemblyDescription("Bouncy Castle Cryptography API")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("The Legion of the Bouncy Castle Inc.")]
-[assembly: AssemblyProduct("Bouncy Castle for .NET")]
-[assembly: AssemblyCopyright("Copyright (C) 2000-2019")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+//[assembly: AssemblyTitle("BouncyCastle.Crypto")]
+//[assembly: AssemblyDescription("Bouncy Castle Cryptography API")]
+//[assembly: AssemblyConfiguration("")]
+//[assembly: AssemblyCompany("The Legion of the Bouncy Castle Inc.")]
+//[assembly: AssemblyProduct("Bouncy Castle for .NET")]
+//[assembly: AssemblyCopyright("Copyright (C) 2000-2019")]
+//[assembly: AssemblyTrademark("")]
+//[assembly: AssemblyCulture("")]
 
 //
 // Version information for an assembly consists of the following four values:
@@ -33,9 +33,9 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("1.8.5.0")]
-[assembly: AssemblyFileVersion("1.8.19031.1")]
-[assembly: AssemblyInformationalVersion("1.8.5")]
+//[assembly: AssemblyVersion("1.8.5.0")]
+//[assembly: AssemblyFileVersion("1.8.19031.1")]
+//[assembly: AssemblyInformationalVersion("1.8.5")]
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the

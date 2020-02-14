@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Solomoto.Crypto</PackageId>
+    <Authors>Solomoto.Crypto</Authors>
+    <Company>Solomoto.Crypto</Company>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <Version>1.1.0</Version>
+    <Product>Solomoto.Crypto</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="doc\**" />
+    <Compile Remove="test\**" />
+    <EmbeddedResource Remove="doc\**" />
+    <EmbeddedResource Remove="test\**" />
+    <None Remove="doc\**" />
+    <None Remove="test\**" />
+  </ItemGroup>
+
+</Project>
